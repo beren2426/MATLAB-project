@@ -1,1 +1,156 @@
-kod buraya yazılcak
+% DDatalar bölünük olduğu için birleştiriyoruz
+classData.walking = {'walking.mat'};
+classData.running = {'running1.mat', 'running 2.mat'};
+classData.jumping = {'jumping1.mat', 'jumping 2.mat'};
+X = {}; % Giriş veri pencereleri
+Y = {}; % Etiketler
+windowSize = 50;
+step = 25;
+classNames = fieldnames(classData);
+for c = 1:length(classNames)
+className = classNames{c};
+files = classData.(className);
+for f = 1:length(files)
+data = load(files{f});
+acc = data.Acceleration; % timetable yapısı
+% X, Y, Z vektörleri
+accVals = [acc.X, acc.Y, acc.Z];
+% Pencerelere bölüyoz
+for i = 1:step:(height(acc) - windowSize)
+segment = accVals(i:i+windowSize-1, :);
+X{end+1} = segment'; % boyut: 3 x windowSize
+Y{end+1} = className;
+end
+end
+end
+%  Etiketleri categorical
+Y = categorical(Y);
+%Eğitim test ayrımı (80e 20)
+numObs = numel(X);
+rng(0); % Tekrarlanabilirlik için
+idx = randperm(numObs);
+trainIdx = idx(1:round(0.8*numObs));
+testIdx = idx(round(0.8*numObs)+1:end);
+XTrain = X(trainIdx);
+YTrain = Y(trainIdx);
+XTest = X(testIdx);
+YTest = Y(testIdx);
+%  LSTM ağı tanımı
+inputSize = 3;
+numHiddenUnits = 50;
+numClasses = numel(categories(Y));
+layers = [
+sequenceInputLayer(inputSize)
+lstmLayer(numHiddenUnits,'OutputMode','last')
+fullyConnectedLayer(numClasses)
+softmaxLayer
+classificationLayer
+];
+options = trainingOptions('adam', ...
+'MaxEpochs', 15, ...
+'MiniBatchSize', 64, ...
+'Shuffle','every-epoch', ...
+'Plots','training-progress', ...
+'Verbose', false);
+%  Modeli training
+net = trainNetwork(XTrain, YTrain, layers, options);
+% Test verisi ile tahmin
+YPred = classify(net, XTest);
+% Confusion matrix ve metrikler
+figure;
+confusionchart(YTest, YPred);
+title('Confusion Matrix');
+accuracy = sum(YPred == YTest) / numel(YTest);
+fprintf('Accuracy: %.2f%%\n', accuracy*100);
+% Precision / Recall
+cm = confusionmat(YTest, YPred);
+precision = diag(cm) ./ sum(cm, 2);
+recall = diag(cm) ./ sum(cm, 1)';
+fprintf('Class-wise Precision:\n'); disp(precision);
+fprintf('Class-wise Recall:\n'); disp(recall);
+% Örnek zaman serisi çizimi
+figure;
+example = XTrain{1}';
+plot(example);
+xlabel('Time Step');
+ylabel('Acceleration (m/s^2)');
+legend('X','Y','Z');
+title('Sample Acceleration Time Series');
+% DDatalar bölünük olduğu için birleştiriyoruz
+classData.walking = {'walking.mat'};
+classData.running = {'running1.mat', 'running 2.mat'};
+classData.jumping = {'jumping1.mat', 'jumping 2.mat'};
+X = {}; % Giriş veri pencereleri
+Y = {}; % Etiketler
+windowSize = 50;
+step = 25;
+classNames = fieldnames(classData);
+for c = 1:length(classNames)
+className = classNames{c};
+files = classData.(className);
+for f = 1:length(files)
+data = load(files{f});
+acc = data.Acceleration; % timetable yapısı
+% X, Y, Z vektörleri
+accVals = [acc.X, acc.Y, acc.Z];
+% Pencerelere bölüyoz
+for i = 1:step:(height(acc) - windowSize)
+segment = accVals(i:i+windowSize-1, :);
+X{end+1} = segment'; % boyut: 3 x windowSize
+Y{end+1} = className;
+end
+end
+end
+%  Etiketleri categorical
+Y = categorical(Y);
+%Eğitim test ayrımı (80e 20)
+numObs = numel(X);
+rng(0); % Tekrarlanabilirlik için
+idx = randperm(numObs);
+trainIdx = idx(1:round(0.8*numObs));
+testIdx = idx(round(0.8*numObs)+1:end);
+XTrain = X(trainIdx);
+YTrain = Y(trainIdx);
+XTest = X(testIdx);
+YTest = Y(testIdx);
+%  LSTM ağı tanımı
+inputSize = 3;
+numHiddenUnits = 50;
+numClasses = numel(categories(Y));
+layers = [
+sequenceInputLayer(inputSize)
+lstmLayer(numHiddenUnits,'OutputMode','last')
+fullyConnectedLayer(numClasses)
+softmaxLayer
+classificationLayer
+];
+options = trainingOptions('adam', ...
+'MaxEpochs', 15, ...
+'MiniBatchSize', 64, ...
+'Shuffle','every-epoch', ...
+'Plots','training-progress', ...
+'Verbose', false);
+%  Modeli training
+net = trainNetwork(XTrain, YTrain, layers, options);
+% Test verisi ile tahmin
+YPred = classify(net, XTest);
+% Confusion matrix ve metrikler
+figure;
+confusionchart(YTest, YPred);
+title('Confusion Matrix');
+accuracy = sum(YPred == YTest) / numel(YTest);
+fprintf('Accuracy: %.2f%%\n', accuracy*100);
+% Precision / Recall
+cm = confusionmat(YTest, YPred);
+precision = diag(cm) ./ sum(cm, 2);
+recall = diag(cm) ./ sum(cm, 1)';
+fprintf('Class-wise Precision:\n'); disp(precision);
+fprintf('Class-wise Recall:\n'); disp(recall);
+% Örnek zaman serisi çizimi
+figure;
+example = XTrain{1}';
+plot(example);
+xlabel('Time Step');
+ylabel('Acceleration (m/s^2)');
+legend('X','Y','Z');
+title('Sample Acceleration Time Series');
