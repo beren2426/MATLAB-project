@@ -1,7 +1,7 @@
 % DDatalar bölünük olduğu için birleştiriyoruz
 classData.walking = {'walking.mat'};
 classData.running = {'running1.mat', 'running 2.mat'};
-classData.jumping = {'jumping1.mat', 'jumping 2.mat'};
+classData.jumping = {'jumping 1.mat', 'jumping 2.mat', 'jumping 3.mat', 'jumping 4.mat', 'jumping 5.mat'};
 X = {}; % Giriş veri pencereleri
 Y = {}; % Etiketler
 windowSize = 50;
